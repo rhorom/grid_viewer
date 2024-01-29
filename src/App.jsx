@@ -42,7 +42,7 @@ function Layout() {
 
             <Navbar.Collapse className='justify-content-end'>
               <Nav>
-                <Nav.Link href='/'><i className='pi pi-home mx-1'></i>Home</Nav.Link>
+                <Nav.Link href='./'><i className='pi pi-home mx-1'></i>Home</Nav.Link>
                 <Nav.Link href='#about'><i className='pi pi-info-circle mx-1'></i>About</Nav.Link>
                 <Nav.Link href='#guide'><i className='pi pi-question-circle mx-1'></i>Guide</Nav.Link>
                 <NavDropdown title={<span><i className='pi pi-question-circle mx-1'></i>Technical Note</span>}>
