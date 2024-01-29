@@ -1,53 +1,78 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { Routes, Route, useSearchParams } from 'react-router-dom'
-import { MapContainer, GeoJSON, Marker, CircleMarker, Popup, Pane, TileLayer, useMap } from 'react-leaflet'
-import { TiledMapLayer } from 'react-esri-leaflet';
+import { Routes, Route, Outlet } from 'react-router-dom'
+import { Nav, Navbar, NavDropdown } from 'react-bootstrap'
+import { About, Guide, TechNote } from './Pages'
+
 import 'bootstrap/dist/css/bootstrap.min.css'
-import 'leaflet/dist/leaflet.css'
+import 'primeicons/primeicons.css'
 import './index.css'
-
-const basemaps = {
-  'esri-gray': 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-  'esri-imagery': 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  'esri-ocean': 'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',
-  'positron': 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
-  'label': 'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
-}
-
-const url = 'https://tiles.arcgis.com/tiles/7vxqqNxnsIHE3EKt/arcgis/rest/services/Anaemia_R1/MapServer'
 
 function MainApp() {
   return (
     <div>
-      <MapContainer
-        center={[20,80]}
-        zoom={5}
-        minZoom={3}
-        maxZoom={9}
-        attributionControl={false}
-        zoomAnimation={true}
-        doubleClickZoom={false}
-        id='map-container'
-        style={{width:'90vw', height:'90vh'}}
-      >
-
-      <Pane name='basemap' style={{zIndex:60}}>
-        <TileLayer url={basemaps['esri-ocean']}/>
-      </Pane>
-
-      <Pane name='gridLayer' style={{zIndex:100}}>
-        <TiledMapLayer url={url}/>
-      </Pane>
-      </MapContainer>
+      <h2>Home</h2>
     </div>
   )
 }
+
 export default function App() {
   return (
     <div>
       <Routes>
-        <Route index element={<MainApp/>}/>
+        <Route path='/' element={<Layout />}>
+          <Route index element={<MainApp />} />
+          <Route path='about' element={<About />} />
+          <Route path='guide' element={<Guide />} />
+          <Route path='note-1' element={<TechNote param={1} />} />
+          <Route path='note-2' element={<TechNote param={2} />} />
+          <Route path='*' element={<NoMatch />} />
+        </Route>
       </Routes>
     </div>
-  )
+  );
+}
+
+function Layout() {
+  return (
+    <div>
+      <div className='shadow mb-4'>
+        <div className='container-xl px-2'>
+          <Navbar expand='md'>
+            <Navbar.Toggle />
+
+            <Navbar.Collapse className='justify-content-end'>
+              <Nav>
+                <Nav.Link href='/'><i className='pi pi-home mx-1'></i>Home</Nav.Link>
+                <Nav.Link href='#about'><i className='pi pi-info-circle mx-1'></i>About</Nav.Link>
+                <Nav.Link href='#guide'><i className='pi pi-question-circle mx-1'></i>Guide</Nav.Link>
+                <NavDropdown title={<span><i className='pi pi-question-circle mx-1'></i>Technical Note</span>}>
+                  <NavDropdown.Item href='#note-1'>Technical Note 1</NavDropdown.Item>
+                  <NavDropdown.Item href='#note-2'>Technical Note 2</NavDropdown.Item>
+                </NavDropdown>
+              </Nav>
+            </Navbar.Collapse>
+          </Navbar>
+        </div>
+      </div>
+
+      <div className='container-xl px-2 ' style={{paddingBottom:'50px'}}>
+        <Outlet />
+      </div>
+
+      <div className='shadow fixed-bottom p-2 justify-content-end'>
+        &copy; 2024 <a href='https://sdi.worldpop.org'>WorldPop SDI</a>
+      </div>
+    </div>
+  );
+}
+
+function NoMatch() {
+  return (
+    <div>
+      <h2>Nothing to see here!</h2>
+      <p>
+        <Link to='/'>Go to the home page</Link>
+      </p>
+    </div>
+  );
 }

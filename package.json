@@ -1,5 +1,6 @@
 {
   "name": "grid_viewer",
+  "homepage": "https://rhorom.github.com/grid_viewer",
   "private": true,
   "version": "0.0.0",
   "type": "module",
