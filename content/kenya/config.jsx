@@ -1,0 +1,1 @@
+export const indicators = ['Indicator A', 'Indicator B', 'Indicator C']
