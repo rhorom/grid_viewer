@@ -1,1 +1,0 @@
-export const indicators = ['Indicator D', 'Indicator E', 'Indicator F']
