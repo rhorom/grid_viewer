@@ -35,9 +35,11 @@ export function Map({param}){
   }
 
   useEffect(() => {
-    fetch(`/data/${param.country}/adm0.json`)
+    fetch(`/src/data/${param.country}/adm0.json`)
       .then(resp => resp.json())
-      .then(json => setBoundary(json))
+      .then(json => {
+        setBoundary(json)
+      })
   }, [param])
 
   useEffect(() => {
