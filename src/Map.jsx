@@ -35,7 +35,9 @@ export function Map({param}){
   }
 
   useEffect(() => {
-    fetch(`/src/data/${param.country}/adm0.json`)
+    const url = `/src/data/${param.country}/adm0.json`
+    //const url = `https://github.com/rhorom/grid_viewer/tree/main/src/data/${param.country}/adm0.json`
+    fetch(url)
       .then(resp => resp.json())
       .then(json => {
         setBoundary(json)
