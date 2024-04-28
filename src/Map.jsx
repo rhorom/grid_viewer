@@ -5,7 +5,8 @@ import { TiledMapLayer } from 'react-esri-leaflet';
 import { Form } from 'react-bootstrap';
 
 import { ArgMin, FloatFormat, LookupTable, GetColor, GetXFromRGB, SimpleSelect, BasicSelect } from './Utils';
-import { mainConfig } from './config';
+import { mainConfig, indicatorDef, StateStyle, StateStyle2, DistrictStyle } from './config';
+import { ZoomPanel, RadioPanel, LegendPanel } from './MapUtils'
 
 const basemaps = {
   'esri':'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -15,10 +16,24 @@ const basemaps = {
 var main_map;
 
 export function Map({param}){
-  const [boundary,setBoundary] = useState()
-  const cfg = mainConfig[param.country]
+  let cfg = mainConfig[param.country]
+  
+  const [boundary, setBoundary] = useState()
+  const [opt, setOpt] = useState({
+    round: 'R2',
+    showRaster: false,
+    showLabel: false,
+    showImprove: false,
+    probLimit: 0
+  })
+
   const ref = useRef()
   
+  const DefineMap = () => {
+    main_map = useMap();
+    return null
+  }
+
   useEffect(() => {
     fetch(`/data/${param.country}/adm0.json`)
       .then(resp => resp.json())
@@ -31,6 +46,20 @@ export function Map({param}){
       ref.current.addData(boundary)
     }
   }, [ref, boundary])
+
+  const theRadioPanel = useMemo(() => {
+    return (
+      <RadioPanel pass={setOpt} param={param}/>
+    )
+  }, [param])
+
+  const theLegendPanel = useMemo(() => {
+    let c = cfg.indicators[param.indicator]
+    c['Definition'] = indicatorDef[param.indicator].Definition
+    c['Unit'] = indicatorDef[param.indicator].Unit
+    c['Proportional'] = indicatorDef[param.indicator].Proportional
+    return <LegendPanel param={c} opt={opt.round}/>
+  }, [param, opt])
 
   return (
     <div className='row'>
@@ -47,15 +76,14 @@ export function Map({param}){
               an additional set of information including tables or graphs to facilitate the interpretation 
               of the data is displayed on the right side panel (Summary, Chart, and Table tabs).</p>
           </div>
-          <div className='float-end p-2 pt-0 pb-0'>
-            selectStates
-          </div>
         </div>
       </div>
 
       <div id='map-container' className='row m-0 mb-5'
         style={{paddingLeft:'0px', paddingRight:'25px'}}
       >
+        {theLegendPanel}
+
         <MapContainer
           zoomControl={false}
           center={param.config.Center}
@@ -65,9 +93,14 @@ export function Map({param}){
           style={{width:'100%', height:'60vh', minHeight:'400px', background:'#fff', borderRadius:'10px'}}
         >
 
+          <DefineMap/>
+          <ZoomPanel map={main_map} param={param.config}/>
+          {theRadioPanel}
+          {/* 
           <Pane name='basemap' style={{zIndex:0}}>
             {<TileLayer url={basemaps['positron']}/>}
           </Pane>
+          */}
 
           <Pane name='selected' style={{zIndex:60}}>
             <GeoJSON data={boundary} ref={ref}/>

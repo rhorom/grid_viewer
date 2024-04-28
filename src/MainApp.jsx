@@ -8,112 +8,19 @@ import {
 } from 'react-router-dom'
 import { Form, Accordion } from 'react-bootstrap'
 import { getFromUrl, GroupSelect, SimpleSelect } from './Utils';
-//import { TheChart } from './Chart';
+import { Chart } from './Chart';
 import { Map } from './Map';
 
 import 'leaflet/dist/leaflet.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 
-import { mainConfig, indicatorDef } from './config.jsx'
-import { fakeAuthProvider } from "./Auth";
+import { mainConfig } from './config.jsx'
 
 const country_paths = Object.keys(mainConfig)
 //const countries = country_paths.map((item) => mainConfig[item].Name)
-const countries = ['India','Kenya']
-
-let AuthContext = createContext();
-
-function AuthProvider({ children }) {
-  let [user, setUser] = useState(null);
-
-  let signin = (newUser, callback) => {
-    return fakeAuthProvider.signin(() => {
-      setUser(newUser);
-      callback();
-    });
-  };
-
-  let signout = (callback) => {
-    return fakeAuthProvider.signout(() => {
-      setUser(null);
-      callback();
-    });
-  };
-
-  let value = { user, signin, signout };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-function useAuth() {
-  return useContext(AuthContext);
-}
-
-function AuthStatus() {
-  let auth = useAuth();
-  let navigate = useNavigate();
-
-  if (!auth.user) {
-    return <p>You are not logged in.</p>;
-  }
-
-  return (
-    <p>
-      Welcome {auth.user}!{" "}
-      <button
-        onClick={() => {
-          auth.signout(() => navigate("/"));
-        }}
-      >
-        Sign out
-      </button>
-    </p>
-  );
-}
-
-function RequireAuth({ children }) {
-  let auth = useAuth();
-  let location = useLocation();
-
-  if (!auth.user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return children;
-}
-
-function LoginPage() {
-  let navigate = useNavigate();
-  let location = useLocation();
-  let auth = useAuth();
-
-  let from = location.state?.from?.pathname || "/";
-
-  function handleSubmit(event) {
-    event.preventDefault();
-
-    let formData = new FormData(event.currentTarget);
-    let username = formData.get("username");
-
-    auth.signin(username, () => {
-      navigate(from, { replace: true });
-    });
-  }
-
-  return (
-    <div>
-      <p>You must log in to view the page at {from}</p>
-
-      <form onSubmit={handleSubmit}>
-        <label>
-          Username: <input name="username" type="text" />
-        </label>{" "}
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
-}
+const countries = ['Burkina Faso', 'India', 'Kenya', 'Nigeria']
+const disableCountries = ['India']
 
 export function MainApp() {
     let navigate = useNavigate()
@@ -182,7 +89,10 @@ export function MainApp() {
             <option value=''></option>
             {countries.map((item,i) => {
               const val = item.replace(' ','').toLowerCase()
-              return <option key={i} value={val}>{item}</option>
+              return (<option key={i} value={val} 
+                disabled={disableCountries.includes(item)}>
+                  {item}
+                </option>)
             })}
           </Form.Select>
         </div>
@@ -213,10 +123,10 @@ export function MainApp() {
               defaultValue={appParam.indicator}
             >
               <option value=''></option>
-              {Object.keys(indicators).map((item,i) => {
+              {Object.keys(indicators).sort().map((item,i) => {
                 return (
                   <optgroup label={item} key={i}>
-                    {indicators[item].map((subitem,j) => {
+                    {indicators[item].sort().map((subitem,j) => {
                       return (<option key={j} value={subitem.Key}>{subitem.Indicator}</option>)
                     })}
                   </optgroup>
@@ -258,8 +168,8 @@ export function MainApp() {
             {appParam.indicator ? <Map param={appParam} /> : <></>}
           </div>
 
-          <div className='col-md-5 m-0 p-0 bg-info'>
-            {appParam.region ? <>TABLE</> : <>EMPTY</>}
+          <div className='col-md-5 m-0 p-0'>
+            {appParam.indicator ? <Chart param={appParam.config} data={[]}/> : <></>}
           </div>
           
         </div>
