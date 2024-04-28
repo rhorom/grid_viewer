@@ -6,7 +6,6 @@ import { Form } from 'react-bootstrap';
 
 import { ArgMin, FloatFormat, LookupTable, GetColor, GetXFromRGB, SimpleSelect, BasicSelect } from './Utils';
 import { mainConfig } from './config';
-import boundary from '/content/burkinafaso/adm0.json';
 
 const basemaps = {
   'esri':'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -15,28 +14,24 @@ const basemaps = {
 };
 var main_map;
 
-async function fetchJson(url, setFunc){
-  try {
-    const resp = await fetch(url)
-    const json = await resp.json()
-    setFunc(json)
-  } catch (error) {
-    console.log('error', error)
-  }
-}
-
 export function Map({param}){
-  const [data,setData] = useState()
+  const [boundary,setBoundary] = useState()
   const cfg = mainConfig[param.country]
+  const ref = useRef()
   
   useEffect(() => {
-    const res = fetch('/content/burkinafaso/adm0.json')
+    fetch(`/data/${param.country}/adm0.json`)
       .then(resp => resp.json())
-      .then(json => setData(json))
+      .then(json => setBoundary(json))
   }, [param])
-  console.log('from import', boundary)
-  console.log('from fetch', data)
-  
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.clearLayers()
+      ref.current.addData(boundary)
+    }
+  }, [ref, boundary])
+
   return (
     <div className='row'>
       <div className='row' style={{minHeight:'120px'}}>
@@ -63,8 +58,8 @@ export function Map({param}){
       >
         <MapContainer
           zoomControl={false}
-          center={[0,0]}
-          zoom={3}
+          center={param.config.Center}
+          zoom={param.config.Zoom}
           minZoom={3}
           maxZoom={9}
           style={{width:'100%', height:'60vh', minHeight:'400px', background:'#fff', borderRadius:'10px'}}
@@ -75,10 +70,7 @@ export function Map({param}){
           </Pane>
 
           <Pane name='selected' style={{zIndex:60}}>
-            <GeoJSON
-              data={boundary}
-              zIndex={400}
-            />
+            <GeoJSON data={boundary} ref={ref}/>
           </Pane>
         </MapContainer>
       </div>

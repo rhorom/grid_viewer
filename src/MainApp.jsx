@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect, createContext } from 'react'
 import { 
   Routes, Route, Outlet, 
   Link, 
@@ -6,7 +6,7 @@ import {
   RouterProvider,
   useNavigate, useLocation, createBrowserRouter
 } from 'react-router-dom'
-import { Form } from 'react-bootstrap'
+import { Form, Accordion } from 'react-bootstrap'
 import { getFromUrl, GroupSelect, SimpleSelect } from './Utils';
 //import { TheChart } from './Chart';
 import { Map } from './Map';
@@ -16,9 +16,104 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
 
 import { mainConfig, indicatorDef } from './config.jsx'
+import { fakeAuthProvider } from "./Auth";
 
 const country_paths = Object.keys(mainConfig)
-const countries = country_paths.map((item) => mainConfig[item].Name)
+//const countries = country_paths.map((item) => mainConfig[item].Name)
+const countries = ['India','Kenya']
+
+let AuthContext = createContext();
+
+function AuthProvider({ children }) {
+  let [user, setUser] = useState(null);
+
+  let signin = (newUser, callback) => {
+    return fakeAuthProvider.signin(() => {
+      setUser(newUser);
+      callback();
+    });
+  };
+
+  let signout = (callback) => {
+    return fakeAuthProvider.signout(() => {
+      setUser(null);
+      callback();
+    });
+  };
+
+  let value = { user, signin, signout };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function useAuth() {
+  return useContext(AuthContext);
+}
+
+function AuthStatus() {
+  let auth = useAuth();
+  let navigate = useNavigate();
+
+  if (!auth.user) {
+    return <p>You are not logged in.</p>;
+  }
+
+  return (
+    <p>
+      Welcome {auth.user}!{" "}
+      <button
+        onClick={() => {
+          auth.signout(() => navigate("/"));
+        }}
+      >
+        Sign out
+      </button>
+    </p>
+  );
+}
+
+function RequireAuth({ children }) {
+  let auth = useAuth();
+  let location = useLocation();
+
+  if (!auth.user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
+}
+
+function LoginPage() {
+  let navigate = useNavigate();
+  let location = useLocation();
+  let auth = useAuth();
+
+  let from = location.state?.from?.pathname || "/";
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    let formData = new FormData(event.currentTarget);
+    let username = formData.get("username");
+
+    auth.signin(username, () => {
+      navigate(from, { replace: true });
+    });
+  }
+
+  return (
+    <div>
+      <p>You must log in to view the page at {from}</p>
+
+      <form onSubmit={handleSubmit}>
+        <label>
+          Username: <input name="username" type="text" />
+        </label>{" "}
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  );
+}
 
 export function MainApp() {
     let navigate = useNavigate()
@@ -26,7 +121,8 @@ export function MainApp() {
     const [appParam, setAppParam] = useState({
       country: '',
       indicator: '',
-      config: ''
+      config: '',
+      region: ''
     })
   
     useEffect(() => {
@@ -52,22 +148,24 @@ export function MainApp() {
       setAppParam(param, {replace:true})
     }, [location])
   
-    function changeCountry(val){
+    function changeCountry(e){
+      const val = e.target.value
       let param = {
         country: val,
         indicator: '',
-        config: mainConfig[val]
+        config: mainConfig[val],
+        region: ''
       }
       setAppParam(param, {replace:true})
       navigate('/'+val, {replace:true})
 
-      if (document.getElementById('selectTheme')) {
-        document.getElementById('selectTheme').value = 'default'
-        document.getElementById('selectIndicator').value = 'default'  
+      if (document.getElementById('selectIndicator')) {
+        document.getElementById('selectIndicator').value = ''  
       }
     }
   
-    function changeIndicator(val){
+    function changeIndicator(e){
+      const val = e.target.value
       const url = `/${appParam.country}/${val}`
       navigate(url, {replace:true})
     }
@@ -76,35 +174,55 @@ export function MainApp() {
       return (
         <div>
           <b>Select country</b>
-          <SimpleSelect 
-              name='Country'
-              items={countries}
-              value={appParam.country}
-              pass={changeCountry}
-              noDefault={false}
-          />
+          <Form.Select
+            id='selectCountry'
+            onChange={changeCountry}
+            defaultValue={appParam.country}
+          >
+            <option value=''></option>
+            {countries.map((item,i) => {
+              const val = item.replace(' ','').toLowerCase()
+              return <option key={i} value={val}>{item}</option>
+            })}
+          </Form.Select>
         </div>
       )
     }
 
     const SelectIndicator = useMemo(() => {
       if (appParam.country) {
-        let indicators = []
+        let indicators = {}
         Object.keys(appParam.config.indicators).forEach((item) => {
-          indicators.push(indicatorDef[item])
+          const theme = appParam.config.indicators[item].Theme
+          if (Object.keys(indicators).includes(theme)){
+            indicators[theme].push({
+              'Key':item, 
+              'Indicator':appParam.config.indicators[item].Indicator})
+          } else {
+            indicators[theme] = [{
+              'Key':item, 
+              'Indicator':appParam.config.indicators[item].Indicator}]
+          }
         })
-        console.log('selectIndicator', appParam.config.indicators)
         return (
           <div>
-            <b>Select indicator {appParam.country}</b>
-            <GroupSelect
-                items={indicators} 
-                keys={['Theme', 'Indicator']} 
-                fixed={['Theme']}
-                lead={['Theme']}
-                end={'Indicator'}
-                defaultOpt={appParam.indicator}
-                pass={changeIndicator}/>
+            <b>Select indicator</b>
+            <Form.Select
+              id='selectIndicator'
+              onChange={changeIndicator}
+              defaultValue={appParam.indicator}
+            >
+              <option value=''></option>
+              {Object.keys(indicators).map((item,i) => {
+                return (
+                  <optgroup label={item} key={i}>
+                    {indicators[item].map((subitem,j) => {
+                      return (<option key={j} value={subitem.Key}>{subitem.Indicator}</option>)
+                    })}
+                  </optgroup>
+                )
+              })}
+            </Form.Select>
           </div>
         )  
       } else {
@@ -136,9 +254,14 @@ export function MainApp() {
         </div>
 
         <div className='row p-0 m-0'>
-          <div className='col-md-5 m-0 p-0'>
+          <div className='col-md-7 m-0 p-0'>
             {appParam.indicator ? <Map param={appParam} /> : <></>}
           </div>
+
+          <div className='col-md-5 m-0 p-0 bg-info'>
+            {appParam.region ? <>TABLE</> : <>EMPTY</>}
+          </div>
+          
         </div>
       </div>
     )

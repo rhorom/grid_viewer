@@ -3,10 +3,12 @@ export const mainConfig = {
         "Name": "Burkina Faso",
         "Adm1": "Region",
         "Adm2": "Province",
+        "Center": [12.7, -1.8],
+        "Zoom": [6],
         "indicators": {
             "indicatorb": {
                 "Indicator": "Indicator B",
-                "Theme": "A",
+                "Theme": "C",
                 "Remark": "",
                 "Min": "",
                 "Max": "",
@@ -21,7 +23,7 @@ export const mainConfig = {
             },
             "indicatorf": {
                 "Indicator": "Indicator F",
-                "Theme": "A",
+                "Theme": "B",
                 "Remark": "",
                 "Min": "",
                 "Max": "",
@@ -55,6 +57,8 @@ export const mainConfig = {
         "Name": "India",
         "Adm1": "State",
         "Adm2": "District",
+        "Center": [22.9, 79.6],
+        "Zoom": [4],
         "indicators": {
             "indicatori": {
                 "Indicator": "Indicator I",
@@ -73,7 +77,7 @@ export const mainConfig = {
             },
             "indicatorn": {
                 "Indicator": "Indicator N",
-                "Theme": "A",
+                "Theme": "B",
                 "Remark": "",
                 "Min": "",
                 "Max": "",
@@ -88,7 +92,7 @@ export const mainConfig = {
             },
             "indicatord": {
                 "Indicator": "Indicator D",
-                "Theme": "A",
+                "Theme": "B",
                 "Remark": "",
                 "Min": "",
                 "Max": "",
@@ -107,10 +111,12 @@ export const mainConfig = {
         "Name": "Kenya",
         "Adm1": "County",
         "Adm2": "Sub-county",
+        "Center": [0.6, 37.8],
+        "Zoom": [6],
         "indicators": {
             "indicatork": {
                 "Indicator": "Indicator K",
-                "Theme": "A",
+                "Theme": "B",
                 "Remark": "",
                 "Min": "",
                 "Max": "",
@@ -159,10 +165,12 @@ export const mainConfig = {
         "Name": "Nigeria",
         "Adm1": "State",
         "Adm2": "Local Government Area",
+        "Center": [9.5, 8.0],
+        "Zoom": [6],
         "indicators": {
             "indicatorn": {
                 "Indicator": "Indicator N",
-                "Theme": "A",
+                "Theme": "B",
                 "Remark": "",
                 "Min": "",
                 "Max": "",

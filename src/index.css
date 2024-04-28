@@ -63,6 +63,10 @@ Table thead{
   margin: 0 0 0 0;
 }
 
+optgroup {
+  font-size: 12pt;
+}
+
 .popover {
   z-index: 4000;
 }
@@ -82,8 +86,7 @@ Table thead{
   font-size: normal;
 }
 
-.form-select{
-  font-size: 14px;
+.form-select {
   border-radius: 10px;
   border: 2px solid #e9546e;
   padding: 3px 8px 5px 5px;

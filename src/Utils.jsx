@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 
-import colormaps from '../content/colormaps.json';
+import colormaps from '../data/colormaps.json';
 
 export async function getFromUrl(url) {
     try {
@@ -112,7 +112,7 @@ export function LookupTable(props){
     }
 }
 
-export function NestedSelect(props){
+export function GroupSelect(props){
     const [itm, setItm] = useState(props.items);
     const fixed = props.fixed ? props.fixed : ['none'];
     const lead = props.lead ? props.lead : props.keys;
@@ -173,14 +173,6 @@ export function NestedSelect(props){
                   <div className='col' key={'div'+key}> {formSelect} </div>
                 )
             })}
-        </div>
-    )
-}
-
-export function GroupSelect(props){
-    return (
-        <div>
-
         </div>
     )
 }
